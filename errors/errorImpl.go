@@ -1,4 +1,4 @@
-package errorEnum
+package errors
 
 import (
 	"fmt"
