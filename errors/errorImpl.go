@@ -8,6 +8,7 @@ import (
 const (
 	UNKNOW = ErrorCode(iota)
 	FILE_TYPE_INVALID
+	BYTE_LEN_MUST_BE_EVEN
 )
 
 type ErrorCode uint
