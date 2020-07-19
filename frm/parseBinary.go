@@ -2,6 +2,7 @@ package frm
 
 import (
 	"fghpdf.com/mysqlMigration/errors"
+	"fghpdf.com/mysqlMigration/frm/constants"
 	"fmt"
 	"strconv"
 	"strings"
@@ -10,6 +11,11 @@ import (
 func parse(fileData []byte) {
 	versionIdData := fileData[51:55]
 
+	// get MySQL version
+	mySQLVersion := getMySQLVersionFromByte(versionIdData)
+	fmt.Println(mySQLVersion)
+
+	// get key info section
 	keyInfoOffset := convertByteSliceToString(fileData[6:8])
 	keyInfoLength := convertByteSliceToString(fileData[14:16])
 	// 65535
@@ -19,8 +25,15 @@ func parse(fileData []byte) {
 	keyInfo := fileData[keyInfoOffset : keyInfoLength+keyInfoOffset]
 	fmt.Println(keyInfo)
 
-	mySQLVersion := getMySQLVersionFromByte(versionIdData)
-	fmt.Println(mySQLVersion)
+	// get column defaults section
+	columnDefaultsOffset := keyInfoOffset + keyInfoLength
+	columnDefaultsLength := convertByteSliceToString(fileData[16:18])
+	columnDefaults := fileData[columnDefaultsOffset : columnDefaultsLength+columnDefaultsOffset]
+	fmt.Println(columnDefaults)
+
+	// get table engine
+	engine := constants.GetLegacyDBTypeFromCode(uint(fileData[0x0003])).Name
+	fmt.Println(engine)
 }
 
 // MySQL version encoded as a 4-byte integer in little endian format.
