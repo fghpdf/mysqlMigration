@@ -46,7 +46,38 @@ func parse(fileData []byte) {
 	headerSize := uint64(64)
 	formInfoOffset := convertByteSliceToString(fileData[headerSize+namesLength : headerSize+namesLength+4])
 	formInfoLength := uint64(288)
-	fmt.Println(formInfoOffset, formInfoLength)
+
+	// get screens section
+	screensLength := convertByteSliceToString(fileData[formInfoOffset+260 : formInfoOffset+262])
+
+	// Column data
+	nullFields := convertByteSliceToString(fileData[formInfoOffset+282 : formInfoOffset+284])
+	columnCount := convertByteSliceToString(fileData[formInfoOffset+258 : formInfoOffset+260])
+
+	// 17 bytes of metadata per column
+	metaDataOffset := formInfoOffset + formInfoLength + screensLength
+	metaDataLength := 17 * columnCount
+
+	namesLength = convertByteSliceToString(fileData[formInfoOffset+268 : formInfoOffset+270])
+	namesOffset := metaDataOffset + metaDataLength
+
+	labelsLength := convertByteSliceToString(fileData[formInfoOffset+274 : formInfoOffset+276])
+	labelOffset := namesOffset + namesLength
+
+	commentsLength := convertByteSliceToString(fileData[formInfoOffset+284 : formInfoOffset+286])
+	commentsOffset := labelOffset + labelsLength
+
+	columnData := packedColumnData{
+		Count:     columnCount,
+		NullCount: nullFields,
+		Metadata:  readData(metaDataOffset, metaDataLength, fileData[:]),
+		Names:     readData(namesOffset, namesLength, fileData[:]),
+		Labels:    readData(labelOffset, labelsLength, fileData[:]),
+		Comments:  readData(commentsOffset, commentsLength, fileData[:]),
+		Defaults:  readData(columnDefaultsOffset, columnDefaultsLength, fileData[:]),
+	}
+
+	fmt.Printf("%q\n", columnData.Names)
 
 	// get table engine
 	engine := constants.GetLegacyDBTypeFromCode(uint(fileData[0x0003])).Name
