@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+func readData(offset uint64, length uint64, data []byte) []byte {
+	return data[offset : offset+length]
+}
+
 func parse(fileData []byte) {
 	versionIdData := fileData[51:55]
 
@@ -22,14 +26,20 @@ func parse(fileData []byte) {
 	if keyInfoLength == 0xffff {
 		keyInfoLength = convertByteSliceToString(fileData[47:51])
 	}
-	keyInfo := fileData[keyInfoOffset : keyInfoLength+keyInfoOffset]
+	keyInfo := readData(keyInfoOffset, keyInfoLength, fileData[:])
 	fmt.Println(keyInfo)
 
 	// get column defaults section
 	columnDefaultsOffset := keyInfoOffset + keyInfoLength
 	columnDefaultsLength := convertByteSliceToString(fileData[16:18])
-	columnDefaults := fileData[columnDefaultsOffset : columnDefaultsLength+columnDefaultsOffset]
+	columnDefaults := readData(columnDefaultsOffset, columnDefaultsLength, fileData[:])
 	fmt.Println(columnDefaults)
+
+	// get table extra / attributes section
+	extraInfoOffset := columnDefaultsOffset + columnDefaultsLength
+	extraInfoLength := convertByteSliceToString(fileData[0x0037:0x003b])
+	extraInfo := readData(extraInfoOffset, extraInfoLength, fileData[:])
+	fmt.Println(extraInfo)
 
 	// get table engine
 	engine := constants.GetLegacyDBTypeFromCode(uint(fileData[0x0003])).Name
