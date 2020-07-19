@@ -41,6 +41,13 @@ func parse(fileData []byte) {
 	extraInfo := readData(extraInfoOffset, extraInfoLength, fileData[:])
 	fmt.Println(extraInfo)
 
+	// get column info section offset and length
+	namesLength := convertByteSliceToString(fileData[0x0004:0x0006])
+	headerSize := uint64(64)
+	formInfoOffset := convertByteSliceToString(fileData[headerSize+namesLength : headerSize+namesLength+4])
+	formInfoLength := uint64(288)
+	fmt.Println(formInfoOffset, formInfoLength)
+
 	// get table engine
 	engine := constants.GetLegacyDBTypeFromCode(uint(fileData[0x0003])).Name
 	fmt.Println(engine)
