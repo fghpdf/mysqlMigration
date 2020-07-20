@@ -8,11 +8,7 @@ import (
 	"strings"
 )
 
-func readData(offset uint64, length uint64, data []byte) []byte {
-	return data[offset : offset+length]
-}
-
-func parse(fileData []byte) {
+func parse(fileData byteSlice) {
 	versionIdData := fileData[51:55]
 
 	// get MySQL version
@@ -26,19 +22,19 @@ func parse(fileData []byte) {
 	if keyInfoLength == 0xffff {
 		keyInfoLength = convertByteSliceToString(fileData[47:51])
 	}
-	keyInfo := readData(keyInfoOffset, keyInfoLength, fileData[:])
+	keyInfo := fileData.readData(keyInfoOffset, keyInfoLength)
 	fmt.Println(keyInfo)
 
 	// get column defaults section
 	columnDefaultsOffset := keyInfoOffset + keyInfoLength
 	columnDefaultsLength := convertByteSliceToString(fileData[16:18])
-	columnDefaults := readData(columnDefaultsOffset, columnDefaultsLength, fileData[:])
+	columnDefaults := fileData.readData(columnDefaultsOffset, columnDefaultsLength)
 	fmt.Println(columnDefaults)
 
 	// get table extra / attributes section
 	extraInfoOffset := columnDefaultsOffset + columnDefaultsLength
 	extraInfoLength := convertByteSliceToString(fileData[0x0037:0x003b])
-	extraInfo := readData(extraInfoOffset, extraInfoLength, fileData[:])
+	extraInfo := fileData.readData(extraInfoOffset, extraInfoLength)
 	fmt.Println(extraInfo)
 
 	// get column info section offset and length
@@ -70,11 +66,11 @@ func parse(fileData []byte) {
 	columnData := packedColumnData{
 		Count:     columnCount,
 		NullCount: nullFields,
-		Metadata:  readData(metaDataOffset, metaDataLength, fileData[:]),
-		Names:     readData(namesOffset, namesLength, fileData[:]),
-		Labels:    readData(labelOffset, labelsLength, fileData[:]),
-		Comments:  readData(commentsOffset, commentsLength, fileData[:]),
-		Defaults:  readData(columnDefaultsOffset, columnDefaultsLength, fileData[:]),
+		Metadata:  fileData.readData(metaDataOffset, metaDataLength),
+		Names:     fileData.readData(namesOffset, namesLength),
+		Labels:    fileData.readData(labelOffset, labelsLength),
+		Comments:  fileData.readData(commentsOffset, commentsLength),
+		Defaults:  fileData.readData(columnDefaultsOffset, columnDefaultsLength),
 	}
 
 	fmt.Printf("%q\n", columnData.Names)
