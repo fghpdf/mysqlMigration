@@ -13,7 +13,6 @@ func parse(fileData byteSlice) {
 
 	// get MySQL version
 	mySQLVersion := getMySQLVersionFromByte(versionIdData)
-	fmt.Println(mySQLVersion)
 
 	// get key info section
 	keyInfoOffset := convertByteSliceToString(fileData[6:8])
@@ -23,19 +22,16 @@ func parse(fileData byteSlice) {
 		keyInfoLength = convertByteSliceToString(fileData[47:51])
 	}
 	keyInfo := fileData.readData(keyInfoOffset, keyInfoLength)
-	fmt.Println(keyInfo)
 
 	// get column defaults section
 	columnDefaultsOffset := keyInfoOffset + keyInfoLength
 	columnDefaultsLength := convertByteSliceToString(fileData[16:18])
 	columnDefaults := fileData.readData(columnDefaultsOffset, columnDefaultsLength)
-	fmt.Println(columnDefaults)
 
 	// get table extra / attributes section
 	extraInfoOffset := columnDefaultsOffset + columnDefaultsLength
 	extraInfoLength := convertByteSliceToString(fileData[0x0037:0x003b])
 	extraInfo := fileData.readData(extraInfoOffset, extraInfoLength)
-	fmt.Println(extraInfo)
 
 	// get column info section offset and length
 	namesLength := convertByteSliceToString(fileData[0x0004:0x0006])
@@ -73,7 +69,15 @@ func parse(fileData byteSlice) {
 		Defaults:  fileData.readData(columnDefaultsOffset, columnDefaultsLength),
 	}
 
-	fmt.Printf("%q\n", columnData.Names)
+	packedFrmData := packedFrmData{
+		MySQLVersion: mySQLVersion,
+		KeyInfo:      keyInfo,
+		Defaults:     columnDefaults,
+		ExtraInfo:    extraInfo,
+		Columns:      columnData,
+	}
+
+	fmt.Println(packedFrmData.ExtraInfo)
 
 	// get table engine
 	engine := constants.GetLegacyDBTypeFromCode(uint(fileData[0x0003])).Name
