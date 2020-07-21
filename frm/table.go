@@ -25,5 +25,12 @@ type tableOptions struct {
 }
 
 type column struct {
-	Name string
+	Name       string
+	Length     uint64
+	TypeCode   constants.MySQLType
+	TypeName   string
+	Default    byteSlice
+	Attributes byteSlice
+	Charset    string
+	Comment    string
 }

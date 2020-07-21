@@ -1,44 +1,44 @@
 package constants
 
-type mySQLType struct {
+type MySQLType struct {
 	Code uint
 	Name string
 }
 
 var (
-	DECIMAL     = mySQLType{Code: 0, Name: "DECIMAL"}
-	TINY        = mySQLType{Code: 1, Name: "TINY"}
-	SHORT       = mySQLType{Code: 2, Name: "SHORT"}
-	LONG        = mySQLType{Code: 3, Name: "LONG"}
-	FLOAT       = mySQLType{Code: 4, Name: "FLOAT"}
-	DOUBLE      = mySQLType{Code: 5, Name: "DOUBLE"}
-	NULL        = mySQLType{Code: 6, Name: "NULL"}
-	TIMESTAMP   = mySQLType{Code: 7, Name: "TIMESTAMP"}
-	LONGLONG    = mySQLType{Code: 8, Name: "LONGLONG"}
-	INT24       = mySQLType{Code: 9, Name: "INT24"}
-	DATE        = mySQLType{Code: 10, Name: "DATE"}
-	TIME        = mySQLType{Code: 11, Name: "TIME"}
-	DATETIME    = mySQLType{Code: 12, Name: "DATETIME"}
-	YEAR        = mySQLType{Code: 13, Name: "YEAR"}
-	NEWDATE     = mySQLType{Code: 14, Name: "NEWDATE"}
-	VARCHAR     = mySQLType{Code: 15, Name: "VARCHAR"}
-	BIT         = mySQLType{Code: 16, Name: "BIT"}
-	TIMESTAMP2  = mySQLType{Code: 17, Name: "TIMESTAMP2"}
-	DATETIME2   = mySQLType{Code: 18, Name: "DATETIME2"}
-	TIME2       = mySQLType{Code: 19, Name: "TIME2"}
-	NEWDECIMAL  = mySQLType{Code: 246, Name: "NEWDECIMAL"}
-	ENUM        = mySQLType{Code: 247, Name: "ENUM"}
-	SET         = mySQLType{Code: 248, Name: "SET"}
-	TINY_BLOB   = mySQLType{Code: 249, Name: "TINY_BLOB"}
-	MEDIUM_BLOB = mySQLType{Code: 250, Name: "MEDIUM_BLOB"}
-	LONG_BLOB   = mySQLType{Code: 251, Name: "LONG_BLOB"}
-	BLOB        = mySQLType{Code: 252, Name: "BLOB"}
-	VAR_STRING  = mySQLType{Code: 253, Name: "VAR_STRING"}
-	STRING      = mySQLType{Code: 254, Name: "STRING"}
-	GEOMETRY    = mySQLType{Code: 255, Name: "GEOMETRY"}
+	DECIMAL     = MySQLType{Code: 0, Name: "DECIMAL"}
+	TINY        = MySQLType{Code: 1, Name: "TINY"}
+	SHORT       = MySQLType{Code: 2, Name: "SHORT"}
+	LONG        = MySQLType{Code: 3, Name: "LONG"}
+	FLOAT       = MySQLType{Code: 4, Name: "FLOAT"}
+	DOUBLE      = MySQLType{Code: 5, Name: "DOUBLE"}
+	NULL        = MySQLType{Code: 6, Name: "NULL"}
+	TIMESTAMP   = MySQLType{Code: 7, Name: "TIMESTAMP"}
+	LONGLONG    = MySQLType{Code: 8, Name: "LONGLONG"}
+	INT24       = MySQLType{Code: 9, Name: "INT24"}
+	DATE        = MySQLType{Code: 10, Name: "DATE"}
+	TIME        = MySQLType{Code: 11, Name: "TIME"}
+	DATETIME    = MySQLType{Code: 12, Name: "DATETIME"}
+	YEAR        = MySQLType{Code: 13, Name: "YEAR"}
+	NEWDATE     = MySQLType{Code: 14, Name: "NEWDATE"}
+	VARCHAR     = MySQLType{Code: 15, Name: "VARCHAR"}
+	BIT         = MySQLType{Code: 16, Name: "BIT"}
+	TIMESTAMP2  = MySQLType{Code: 17, Name: "TIMESTAMP2"}
+	DATETIME2   = MySQLType{Code: 18, Name: "DATETIME2"}
+	TIME2       = MySQLType{Code: 19, Name: "TIME2"}
+	NEWDECIMAL  = MySQLType{Code: 246, Name: "NEWDECIMAL"}
+	ENUM        = MySQLType{Code: 247, Name: "ENUM"}
+	SET         = MySQLType{Code: 248, Name: "SET"}
+	TINY_BLOB   = MySQLType{Code: 249, Name: "TINY_BLOB"}
+	MEDIUM_BLOB = MySQLType{Code: 250, Name: "MEDIUM_BLOB"}
+	LONG_BLOB   = MySQLType{Code: 251, Name: "LONG_BLOB"}
+	BLOB        = MySQLType{Code: 252, Name: "BLOB"}
+	VAR_STRING  = MySQLType{Code: 253, Name: "VAR_STRING"}
+	STRING      = MySQLType{Code: 254, Name: "STRING"}
+	GEOMETRY    = MySQLType{Code: 255, Name: "GEOMETRY"}
 )
 
-var codeToMySQLTypeMap = map[uint]mySQLType{
+var codeToMySQLTypeMap = map[uint]MySQLType{
 	0:   DECIMAL,
 	1:   TINY,
 	2:   SHORT,
@@ -71,7 +71,7 @@ var codeToMySQLTypeMap = map[uint]mySQLType{
 	255: GEOMETRY,
 }
 
-func GetMySQLTypeFromCode(code uint) *mySQLType {
+func GetMySQLTypeFromCode(code uint) *MySQLType {
 	mysqlType := codeToMySQLTypeMap[code]
 	return &mysqlType
 }
