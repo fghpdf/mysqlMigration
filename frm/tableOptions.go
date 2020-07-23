@@ -3,7 +3,7 @@ package frm
 import "fghpdf.com/mysqlMigration/frm/constants"
 
 type TableOptions struct {
-	Connection    byteSlice
+	Connection    string
 	Engine        string
 	Charset       constants.Charset
 	MinRows       uint64
@@ -13,5 +13,5 @@ type TableOptions struct {
 	RowFormat     constants.HaRowType
 	KeyBlockSize  uint64
 	Comment       string
-	PartitionInfo byteSlice
+	PartitionInfo string
 }
