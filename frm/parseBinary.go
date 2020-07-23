@@ -77,23 +77,22 @@ func parse(fileData byteSlice) {
 		Columns:      columnData,
 	}
 
-	fmt.Println(packedFrmData.ExtraInfo)
+	connection, engine, partitionInfo := packedFrmData.ExtraInfo.parseExtraInfo()
+	fmt.Println(connection, engine, partitionInfo)
 
 	// get table engine
-	engine := constants.GetLegacyDBTypeFromCode(uint(fileData[0x0003])).Name
-	fmt.Println(engine)
+	engine = constants.GetLegacyDBTypeFromCode(uint(fileData[0x0003])).Name
 
 	tableOpts := TableOptions{
-		Engine:        engine,
-		Charset:       constants.Lookup(uint(fileData[0x0026])),
-		MinRows:       convertByteSliceToString(fileData[0x0016:0x001a]),
-		MaxRows:       convertByteSliceToString(fileData[0x0012:0x0016]),
-		AvgRowLength:  convertByteSliceToString(fileData[0x0022:0x0026]),
-		HaOption:      0,
-		RowFormat:     *constants.GetHaRowTypeFromCode(uint(fileData[0x0028])),
-		KeyBlockSize:  convertByteSliceToString(fileData[0x003e:0x0040]),
-		Comment:       "",
-		PartitionInfo: nil,
+		Engine:       engine,
+		Charset:      constants.Lookup(uint(fileData[0x0026])),
+		MinRows:      convertByteSliceToString(fileData[0x0016:0x001a]),
+		MaxRows:      convertByteSliceToString(fileData[0x0012:0x0016]),
+		AvgRowLength: convertByteSliceToString(fileData[0x0022:0x0026]),
+		HaOption:     0,
+		RowFormat:    *constants.GetHaRowTypeFromCode(uint(fileData[0x0028])),
+		KeyBlockSize: convertByteSliceToString(fileData[0x003e:0x0040]),
+		Comment:      "",
 	}
 
 	table := Table{
