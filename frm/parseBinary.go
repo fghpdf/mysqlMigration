@@ -85,7 +85,7 @@ func parse(fileData byteSlice) {
 
 	tableOpts := TableOptions{
 		Engine:        engine,
-		Charset:       "",
+		Charset:       constants.Lookup(uint(fileData[0x0026])),
 		MinRows:       convertByteSliceToString(fileData[0x0016:0x001a]),
 		MaxRows:       convertByteSliceToString(fileData[0x0012:0x0016]),
 		AvgRowLength:  convertByteSliceToString(fileData[0x0022:0x0026]),
@@ -100,7 +100,7 @@ func parse(fileData byteSlice) {
 		TableOptions: tableOpts,
 	}
 
-	fmt.Println(table)
+	fmt.Println(table.TableOptions.Charset)
 }
 
 // MySQL version encoded as a 4-byte integer in little endian format.

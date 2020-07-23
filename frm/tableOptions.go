@@ -5,7 +5,7 @@ import "fghpdf.com/mysqlMigration/frm/constants"
 type TableOptions struct {
 	Connection    byteSlice
 	Engine        string
-	Charset       string
+	Charset       constants.Charset
 	MinRows       uint64
 	MaxRows       uint64
 	AvgRowLength  uint64
