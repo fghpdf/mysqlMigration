@@ -9,7 +9,7 @@ type TableOptions struct {
 	MinRows       uint64
 	MaxRows       uint64
 	AvgRowLength  uint64
-	HaOption      int
+	HandlerOption []constants.HaOption
 	RowFormat     constants.HaRowType
 	KeyBlockSize  uint64
 	Comment       string

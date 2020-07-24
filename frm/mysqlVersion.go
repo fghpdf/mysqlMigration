@@ -3,9 +3,9 @@ package frm
 import "fmt"
 
 type MySQLVersion struct {
-	Major   uint32
-	Minor   uint32
-	Release uint32
+	Major   uint64
+	Minor   uint64
+	Release uint64
 }
 
 func (version MySQLVersion) Format() string {
@@ -16,7 +16,7 @@ func (version MySQLVersion) Format() string {
 	}
 }
 
-func GetMySQLVersionFromId(versionId uint32) MySQLVersion {
+func GetMySQLVersionFromId(versionId uint64) MySQLVersion {
 	return MySQLVersion{
 		Major:   versionId / 10000,
 		Minor:   versionId % 1000 / 100,
