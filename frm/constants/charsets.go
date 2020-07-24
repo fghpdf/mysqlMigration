@@ -1546,11 +1546,11 @@ var codeToCharsetMap = map[uint]Charset{
 	},
 }
 
-func Lookup(id uint) Charset {
+func Lookup(id uint) *Charset {
 	ch, ok := codeToCharsetMap[id]
 	if !ok {
 		panic(errors.NewFormat("Charset id '%d' not found", id))
 	}
 
-	return ch
+	return &ch
 }
