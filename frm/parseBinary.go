@@ -83,10 +83,12 @@ func parse(fileData byteSlice) {
 		engine = constants.GetLegacyDBTypeFromCode(uint(fileData[0x003d])).Name
 	}
 
+	charset := constants.Lookup(uint(fileData[0x0026]))
+
 	tableOpts := TableOptions{
 		Connection:    connection,
 		Engine:        engine,
-		Charset:       *constants.Lookup(uint(fileData[0x0026])),
+		Charset:       *charset,
 		MinRows:       fileData.convertRangeToNumber(0x0016, 4),
 		MaxRows:       fileData.convertRangeToNumber(0x0012, 4),
 		AvgRowLength:  fileData.convertRangeToNumber(0x0022, 4),
@@ -98,7 +100,9 @@ func parse(fileData byteSlice) {
 	}
 
 	table := Table{
+		MySQLVersion: mySQLVersion,
 		TableOptions: tableOpts,
+		Charset:      *charset,
 	}
 
 	fmt.Println(table.TableOptions.HandlerOption)
@@ -107,7 +111,7 @@ func parse(fileData byteSlice) {
 // MySQL version encoded as a 4-byte integer in little endian format.
 // This is the value MYSQL_VERSION_ID from include/mysql_version.h in the mysql source tree.
 // Example: ‘xb6xc5x00x00’ 0x0000c5b6 => 50614 => MySQL v5.6.14
-func getMySQLVersionFromByte(versionIdData byteSlice) string {
+func getMySQLVersionFromByte(versionIdData byteSlice) MySQLVersion {
 	versionId := versionIdData.convertRangeToNumber(0, uint64(len(versionIdData)))
-	return GetMySQLVersionFromId(versionId).Format()
+	return GetMySQLVersionFromId(versionId)
 }
