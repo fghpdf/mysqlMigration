@@ -1,7 +1,7 @@
 package frm
 
 type packedFrmData struct {
-	MySQLVersion string
+	MySQLVersion MySQLVersion
 	FilePath     string
 	KeyInfo      byteSlice
 	Defaults     byteSlice

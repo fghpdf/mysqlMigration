@@ -1,9 +1,41 @@
 package frm
 
+import (
+	"fghpdf.com/mysqlMigration/errors"
+	"fmt"
+	"strconv"
+	"strings"
+)
+
 type byteSlice []byte
 
 func (b byteSlice) readData(offset uint64, length uint64) []byte {
 	return b[offset : offset+length]
+}
+
+func (b byteSlice) convertRangeToNumber(offset uint64, length uint64) uint64 {
+	data := b.readData(offset, length)
+
+	dataLen := len(data)
+
+	// must be even
+	if dataLen%2 != 0 {
+		panic(errors.BYTE_LEN_MUST_BE_EVEN.New("byte length must be even"))
+	}
+
+	var sb strings.Builder
+
+	for i := dataLen - 1; i >= 0; i = i - 2 {
+		hexStr := fmt.Sprintf("%02x%02x", data[i], data[i-1])
+		sb.WriteString(hexStr)
+	}
+
+	result, err := strconv.ParseUint(sb.String(), 16, 32)
+	if err != nil {
+		panic(errors.WrapFormat(err, "[convertByteSliceToString] strconv.ParseUint error"))
+	}
+
+	return result
 }
 
 /**

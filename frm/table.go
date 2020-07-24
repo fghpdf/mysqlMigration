@@ -1,9 +1,11 @@
 package frm
 
+import "fghpdf.com/mysqlMigration/frm/constants"
+
 type Table struct {
 	Name         string
 	MySQLVersion MySQLVersion
-	Charset      string
+	Charset      constants.Charset
 	TableOptions TableOptions
 	Columns      []Column
 }
