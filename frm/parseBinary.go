@@ -66,6 +66,8 @@ func parse(fileData byteSlice) {
 		Defaults:  fileData.readData(columnDefaultsOffset, columnDefaultsLength),
 	}
 
+	fmt.Println(columnData.Names)
+
 	packedFrmData := packedFrmData{
 		MySQLVersion: mySQLVersion,
 		KeyInfo:      keyInfo,
@@ -106,6 +108,7 @@ func parse(fileData byteSlice) {
 	}
 
 	fmt.Println(table.TableOptions.HandlerOption)
+	parseColumnData(columnData)
 }
 
 // MySQL version encoded as a 4-byte integer in little endian format.
