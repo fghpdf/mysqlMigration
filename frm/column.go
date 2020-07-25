@@ -36,8 +36,10 @@ func parseColumnData(data packedColumnData, table Table) *[]Column {
 	for index, name := range *names {
 		length := data.Metadata.convertRangeToNumber(metadataOffset+3, 2)
 		typeCode := constants.GetMySQLTypeFromCode(uint64(data.Metadata[metadataOffset+13]))
+		fieldFlags := constants.GetFieldFlagFromCode(data.Metadata.convertRangeToNumber(metadataOffset+8, 2))
+		uniregCheck := constants.GetUTypeFromCode(uint64(data.Metadata[metadataOffset+10]))
 
-		fmt.Println(index, name, length, typeCode)
+		fmt.Println(index, name, length, typeCode, fieldFlags, uniregCheck)
 		metadataOffset += 17
 	}
 
