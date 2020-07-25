@@ -38,7 +38,7 @@ var (
 	GEOMETRY    = MySQLType{Code: 255, Name: "GEOMETRY"}
 )
 
-var codeToMySQLTypeMap = map[uint]MySQLType{
+var codeToMySQLTypeMap = map[uint64]MySQLType{
 	0:   DECIMAL,
 	1:   TINY,
 	2:   SHORT,
@@ -71,7 +71,7 @@ var codeToMySQLTypeMap = map[uint]MySQLType{
 	255: GEOMETRY,
 }
 
-func GetMySQLTypeFromCode(code uint) *MySQLType {
+func GetMySQLTypeFromCode(code uint64) *MySQLType {
 	mysqlType := codeToMySQLTypeMap[code]
 	return &mysqlType
 }

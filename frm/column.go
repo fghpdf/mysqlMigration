@@ -17,10 +17,30 @@ type Column struct {
 	Comment    string
 }
 
-func parseColumnData(data packedColumnData) *[]Column {
+func parseColumnData(data packedColumnData, table Table) *[]Column {
 	names := getNames(data.Names)
 	labels := getLabels(data.Labels)
-	fmt.Println(names, labels)
+
+	nullBit := 1
+	for _, value := range table.TableOptions.HandlerOptions {
+		if value.Name == "PACK_RECORD" {
+			nullBit = 0
+		}
+	}
+
+	nullBytesLength := (data.NullCount + 1 + 7) / 8
+	nullBytes := data.Defaults.readData(0, nullBytesLength)
+	fmt.Println(nullBytes, nullBit, labels)
+
+	metadataOffset := uint64(0)
+	for index, name := range *names {
+		length := data.Metadata.convertRangeToNumber(metadataOffset+3, 2)
+		typeCode := constants.GetMySQLTypeFromCode(uint64(data.Metadata[metadataOffset+13]))
+
+		fmt.Println(index, name, length, typeCode)
+		metadataOffset += 17
+	}
+
 	return nil
 }
 
