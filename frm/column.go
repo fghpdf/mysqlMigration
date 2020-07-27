@@ -9,17 +9,19 @@ import (
 type Column struct {
 	Name       string
 	Length     uint64
-	TypeCode   constants.MySQLType
+	TypeCode   *constants.MySQLType
 	TypeName   string
 	Default    byteSlice
 	Attributes byteSlice
-	Charset    string
+	Charset    *constants.Charset
 	Comment    string
 }
 
 func parseColumnData(data packedColumnData, table Table) *[]Column {
+	var res []Column
+
 	names := getNames(data.Names)
-	labels := getLabels(data.Labels)
+	labels := *getLabels(data.Labels)
 
 	nullBit := 1
 	for _, value := range table.TableOptions.HandlerOptions {
@@ -39,11 +41,58 @@ func parseColumnData(data packedColumnData, table Table) *[]Column {
 		fieldFlags := constants.GetFieldFlagFromCode(data.Metadata.convertRangeToNumber(metadataOffset+8, 2))
 		uniregCheck := constants.GetUTypeFromCode(uint64(data.Metadata[metadataOffset+10]))
 
+		if StringInSlice(typeCode.Name, []string{"ENUM", "SET"}) {
+			labelId := uint64(data.Metadata[metadataOffset+12]) - 1
+			labels = []string{labels[labelId]}
+		} else {
+			labels = nil
+		}
+
+		defaultsOffset := data.Metadata.convertRangeToNumber(metadataOffset+5, 3) - 1
+		commentLength := data.Metadata.convertRangeToNumber(metadataOffset+15, 2)
+
+		subtypeCode := uint64(0)
+		charsetId := uint64(0)
+		if typeCode.Name != "GEOMETRY" {
+			charsetId = (uint64(data.Metadata[metadataOffset+11]) << 8) +
+				data.Metadata.convertRangeToNumber(metadataOffset+14, 2)
+			subtypeCode = 0
+		} else {
+			charsetId = 63
+			subtypeCode = uint64(data.Metadata[metadataOffset+14])
+		}
+		subType := constants.GetGeometryTypeFromCode(subtypeCode)
+
 		fmt.Println(index, name, length, typeCode, fieldFlags, uniregCheck)
 		metadataOffset += 17
+
+		charset := constants.Lookup(charsetId)
+
+		if labels != nil {
+			if StringInSlice(charset.Name, []string{"ucs2", "utf16", "utf16le", "utf32"}) {
+				// clear
+				for index, _ := range labels {
+					labels[index] = ""
+				}
+			}
+		}
+
+		comment := string(data.Comments.readData(0, commentLength))
+
+		column := Column{
+			Name:     name,
+			Length:   length,
+			TypeCode: typeCode,
+			TypeName: "",
+			Default:  nil,
+			Charset:  charset,
+			Comment:  comment,
+		}
+
+		res = append(res, column)
 	}
 
-	return nil
+	return &res
 }
 
 func getNames(names byteSlice) *[]string {
@@ -76,4 +125,16 @@ func getLabels(labels byteSlice) *[]string {
 	}
 
 	return &res
+}
+
+type getDefaultDataOptions struct {
+	typeCode    constants.MySQLType
+	flags       []constants.FieldFlag
+	nullBit     int
+	nullBytes   byteSlice
+	uniregCheck constants.UType
+}
+
+func getDefaultData(data byteSlice, options getDefaultDataOptions) string {
+
 }

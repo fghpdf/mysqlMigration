@@ -85,7 +85,7 @@ func parse(fileData byteSlice) {
 		engine = constants.GetLegacyDBTypeFromCode(uint(fileData[0x003d])).Name
 	}
 
-	charset := constants.Lookup(uint(fileData[0x0026]))
+	charset := constants.Lookup(uint64(fileData[0x0026]))
 
 	tableOpts := TableOptions{
 		Connection:     connection,

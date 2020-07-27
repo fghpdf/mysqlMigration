@@ -1,5 +1,10 @@
 package constants
 
+import (
+	"encoding/binary"
+	"fmt"
+)
+
 type MySQLType struct {
 	Code uint
 	Name string
@@ -74,4 +79,53 @@ var codeToMySQLTypeMap = map[uint64]MySQLType{
 func GetMySQLTypeFromCode(code uint64) *MySQLType {
 	mysqlType := codeToMySQLTypeMap[code]
 	return &mysqlType
+}
+
+func formatDefault(value uint64) string {
+	return fmt.Sprintf("/'%d/'", value)
+}
+
+func GetTypeDefault(data []byte, isDecimal bool, sqlType MySQLType) string {
+	if sqlType == TINY {
+		if isDecimal {
+			x := int8(data[0])
+			return fmt.Sprintf("/'%d/'", x)
+		} else {
+			x := uint64(data[0])
+			return formatDefault(x)
+		}
+	}
+
+	if sqlType == SHORT {
+		x := binary.LittleEndian.Uint16(data)
+		if isDecimal {
+			return fmt.Sprintf("/'%d/'", int16(x))
+		} else {
+			return formatDefault(uint64(x))
+		}
+	}
+
+	if sqlType == INT24 {
+		// TODO: int24
+	}
+
+	if sqlType == LONG {
+		x := binary.LittleEndian.Uint32(data)
+		if isDecimal {
+			return fmt.Sprintf("/'%d/'", int32(x))
+		} else {
+			return formatDefault(uint64(x))
+		}
+	}
+
+	if sqlType == LONGLONG {
+		x := binary.LittleEndian.Uint64(data)
+		if isDecimal {
+			return fmt.Sprintf("/'%d/'", int64(x))
+		} else {
+			return formatDefault(uint64(x))
+		}
+	}
+
+	return ""
 }
