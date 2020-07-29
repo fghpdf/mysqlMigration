@@ -7,14 +7,14 @@ import (
 )
 
 type Column struct {
-	Name       string
-	Length     uint64
-	TypeCode   *constants.MySQLType
-	TypeName   string
-	Default    byteSlice
-	Attributes byteSlice
-	Charset    *constants.Charset
-	Comment    string
+	Name         string
+	Length       uint64
+	TypeCode     *constants.MySQLType
+	TypeName     string
+	DefaultValue string
+	Attributes   byteSlice
+	Charset      *constants.Charset
+	Comment      string
 }
 
 func parseColumnData(data packedColumnData, table Table) *[]Column {
@@ -32,7 +32,6 @@ func parseColumnData(data packedColumnData, table Table) *[]Column {
 
 	nullBytesLength := (data.NullCount + 1 + 7) / 8
 	nullBytes := data.Defaults.readData(0, nullBytesLength)
-	fmt.Println(nullBytes, nullBit, labels)
 
 	metadataOffset := uint64(0)
 	for index, name := range *names {
@@ -78,15 +77,23 @@ func parseColumnData(data packedColumnData, table Table) *[]Column {
 		}
 
 		comment := string(data.Comments.readData(0, commentLength))
+		defaultDataOpts := getDefaultDataOptions{
+			typeCode:    typeCode,
+			flags:       fieldFlags,
+			nullBit:     nullBit,
+			nullBytes:   nullBytes,
+			uniregCheck: uniregCheck,
+		}
+		defaultValue := getDefaultData(data.Defaults[defaultsOffset:], defaultDataOpts)
 
 		column := Column{
-			Name:     name,
-			Length:   length,
-			TypeCode: typeCode,
-			TypeName: "",
-			Default:  nil,
-			Charset:  charset,
-			Comment:  comment,
+			Name:         name,
+			Length:       length,
+			TypeCode:     typeCode,
+			TypeName:     "",
+			DefaultValue: defaultValue,
+			Charset:      charset,
+			Comment:      comment,
 		}
 
 		res = append(res, column)
@@ -128,13 +135,50 @@ func getLabels(labels byteSlice) *[]string {
 }
 
 type getDefaultDataOptions struct {
-	typeCode    constants.MySQLType
-	flags       []constants.FieldFlag
+	typeCode    *constants.MySQLType
+	flags       *[]constants.FieldFlag
 	nullBit     int
 	nullBytes   byteSlice
-	uniregCheck constants.UType
+	uniregCheck *constants.UType
 }
 
 func getDefaultData(data byteSlice, options getDefaultDataOptions) string {
+	hasDefaultValue := true
+	isMayBeNull := false
+	isDecimal := false
+	for _, flag := range *options.flags {
+		if flag.Name == "NO_DEFAULT" {
+			hasDefaultValue = false
+		}
 
+		if flag.Name == "MAYBE_NULL" {
+			isMayBeNull = true
+		}
+
+		if flag.Name == "DECIMAL" {
+			isDecimal = true
+		}
+	}
+
+	isAutoIncr := options.uniregCheck.Name == "NEXT_NUMBER"
+
+	if isAutoIncr || !hasDefaultValue {
+		return ""
+	}
+
+	if isMayBeNull {
+		nullMap := options.nullBytes
+		offset := options.nullBit / 8
+		nullByte := nullMap[offset]
+		nullBit := options.nullBit % 8
+		if nullByte&(1<<nullBit) && options.uniregCheck.Name != "BLOB_FIELD" {
+			return "NULL"
+		}
+	}
+
+	if options.uniregCheck.Name == "BLOB_FIELD" {
+		return ""
+	}
+
+	return constants.GetTypeDefault(data, isDecimal, options.typeCode)
 }

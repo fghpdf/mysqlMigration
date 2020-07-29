@@ -85,8 +85,8 @@ func formatDefault(value uint64) string {
 	return fmt.Sprintf("/'%d/'", value)
 }
 
-func GetTypeDefault(data []byte, isDecimal bool, sqlType MySQLType) string {
-	if sqlType == TINY {
+func GetTypeDefault(data []byte, isDecimal bool, sqlType *MySQLType) string {
+	if *sqlType == TINY {
 		if isDecimal {
 			x := int8(data[0])
 			return fmt.Sprintf("/'%d/'", x)
@@ -96,7 +96,7 @@ func GetTypeDefault(data []byte, isDecimal bool, sqlType MySQLType) string {
 		}
 	}
 
-	if sqlType == SHORT {
+	if *sqlType == SHORT {
 		x := binary.LittleEndian.Uint16(data)
 		if isDecimal {
 			return fmt.Sprintf("/'%d/'", int16(x))
@@ -105,11 +105,11 @@ func GetTypeDefault(data []byte, isDecimal bool, sqlType MySQLType) string {
 		}
 	}
 
-	if sqlType == INT24 {
+	if *sqlType == INT24 {
 		// TODO: int24
 	}
 
-	if sqlType == LONG {
+	if *sqlType == LONG {
 		x := binary.LittleEndian.Uint32(data)
 		if isDecimal {
 			return fmt.Sprintf("/'%d/'", int32(x))
@@ -118,7 +118,7 @@ func GetTypeDefault(data []byte, isDecimal bool, sqlType MySQLType) string {
 		}
 	}
 
-	if sqlType == LONGLONG {
+	if *sqlType == LONGLONG {
 		x := binary.LittleEndian.Uint64(data)
 		if isDecimal {
 			return fmt.Sprintf("/'%d/'", int64(x))
