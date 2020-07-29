@@ -3,6 +3,7 @@ package frm
 import (
 	"bytes"
 	"fghpdf.com/mysqlMigration/frm/constants"
+	"fghpdf.com/mysqlMigration/frm/utils"
 	"fmt"
 )
 
@@ -34,13 +35,13 @@ func parseColumnData(data packedColumnData, table Table) *[]Column {
 	nullBytes := data.Defaults.readData(0, nullBytesLength)
 
 	metadataOffset := uint64(0)
-	for index, name := range *names {
+	for _, name := range *names {
 		length := data.Metadata.convertRangeToNumber(metadataOffset+3, 2)
 		typeCode := constants.GetMySQLTypeFromCode(uint64(data.Metadata[metadataOffset+13]))
 		fieldFlags := constants.GetFieldFlagFromCode(data.Metadata.convertRangeToNumber(metadataOffset+8, 2))
 		uniregCheck := constants.GetUTypeFromCode(uint64(data.Metadata[metadataOffset+10]))
 
-		if StringInSlice(typeCode.Name, []string{"ENUM", "SET"}) {
+		if utils.StringInSlice(typeCode.Name, []string{"ENUM", "SET"}) {
 			labelId := uint64(data.Metadata[metadataOffset+12]) - 1
 			labels = []string{labels[labelId]}
 		} else {
@@ -61,14 +62,14 @@ func parseColumnData(data packedColumnData, table Table) *[]Column {
 			subtypeCode = uint64(data.Metadata[metadataOffset+14])
 		}
 		subType := constants.GetGeometryTypeFromCode(subtypeCode)
+		fmt.Println(subType)
 
-		fmt.Println(index, name, length, typeCode, fieldFlags, uniregCheck)
 		metadataOffset += 17
 
 		charset := constants.Lookup(charsetId)
 
 		if labels != nil {
-			if StringInSlice(charset.Name, []string{"ucs2", "utf16", "utf16le", "utf32"}) {
+			if utils.StringInSlice(charset.Name, []string{"ucs2", "utf16", "utf16le", "utf32"}) {
 				// clear
 				for index, _ := range labels {
 					labels[index] = ""
@@ -84,17 +85,25 @@ func parseColumnData(data packedColumnData, table Table) *[]Column {
 			nullBytes:   nullBytes,
 			uniregCheck: uniregCheck,
 		}
+		nullBit += 1
 		defaultValue := getDefaultData(data.Defaults[defaultsOffset:], defaultDataOpts)
+
+		formatTypeOpts := constants.FormatTypeOptions{
+			Length: length,
+			Flags:  fieldFlags,
+		}
 
 		column := Column{
 			Name:         name,
 			Length:       length,
 			TypeCode:     typeCode,
-			TypeName:     "",
+			TypeName:     typeCode.FormatType(formatTypeOpts),
 			DefaultValue: defaultValue,
 			Charset:      charset,
 			Comment:      comment,
 		}
+
+		fmt.Println(column)
 
 		res = append(res, column)
 	}
@@ -171,7 +180,7 @@ func getDefaultData(data byteSlice, options getDefaultDataOptions) string {
 		offset := options.nullBit / 8
 		nullByte := nullMap[offset]
 		nullBit := options.nullBit % 8
-		if nullByte&(1<<nullBit) && options.uniregCheck.Name != "BLOB_FIELD" {
+		if nullByte&(1<<nullBit) != 0 && options.uniregCheck.Name != "BLOB_FIELD" {
 			return "NULL"
 		}
 	}
@@ -180,5 +189,5 @@ func getDefaultData(data byteSlice, options getDefaultDataOptions) string {
 		return ""
 	}
 
-	return constants.GetTypeDefault(data, isDecimal, options.typeCode)
+	return constants.GetDefaultValue(data, isDecimal, options.typeCode)
 }

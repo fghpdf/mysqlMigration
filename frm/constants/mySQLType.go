@@ -2,7 +2,9 @@ package constants
 
 import (
 	"encoding/binary"
+	"fghpdf.com/mysqlMigration/frm/utils"
 	"fmt"
+	"strings"
 )
 
 type MySQLType struct {
@@ -81,18 +83,18 @@ func GetMySQLTypeFromCode(code uint64) *MySQLType {
 	return &mysqlType
 }
 
-func formatDefault(value uint64) string {
+func formatDefaultValue(value uint64) string {
 	return fmt.Sprintf("/'%d/'", value)
 }
 
-func GetTypeDefault(data []byte, isDecimal bool, sqlType *MySQLType) string {
+func GetDefaultValue(data []byte, isDecimal bool, sqlType *MySQLType) string {
 	if *sqlType == TINY {
 		if isDecimal {
 			x := int8(data[0])
 			return fmt.Sprintf("/'%d/'", x)
 		} else {
 			x := uint64(data[0])
-			return formatDefault(x)
+			return formatDefaultValue(x)
 		}
 	}
 
@@ -101,7 +103,7 @@ func GetTypeDefault(data []byte, isDecimal bool, sqlType *MySQLType) string {
 		if isDecimal {
 			return fmt.Sprintf("/'%d/'", int16(x))
 		} else {
-			return formatDefault(uint64(x))
+			return formatDefaultValue(uint64(x))
 		}
 	}
 
@@ -114,7 +116,7 @@ func GetTypeDefault(data []byte, isDecimal bool, sqlType *MySQLType) string {
 		if isDecimal {
 			return fmt.Sprintf("/'%d/'", int32(x))
 		} else {
-			return formatDefault(uint64(x))
+			return formatDefaultValue(uint64(x))
 		}
 	}
 
@@ -123,9 +125,59 @@ func GetTypeDefault(data []byte, isDecimal bool, sqlType *MySQLType) string {
 		if isDecimal {
 			return fmt.Sprintf("/'%d/'", int64(x))
 		} else {
-			return formatDefault(uint64(x))
+			return formatDefaultValue(uint64(x))
 		}
 	}
 
 	return ""
+}
+
+type FormatTypeOptions struct {
+	Length      uint64
+	Flags       *[]FieldFlag
+	uniregCheck *UType
+}
+
+func (sqlType *MySQLType) FormatType(opts FormatTypeOptions) string {
+	name := strings.ToLower(sqlType.Name)
+
+	if utils.StringInSlice(name, []string{"tinyint", "smallint", "mediumint", "int", "bigint"}) {
+		return formatNumber(name, opts)
+	}
+
+	if name == "newdecimal" {
+		// TODO
+	}
+
+	return ""
+}
+
+func formatNumber(name string, opts FormatTypeOptions) string {
+	res := name
+	isDecimal := false
+	isZeroFill := false
+
+	for _, flag := range *opts.Flags {
+		if flag.Name == "DECIMAL" {
+			isDecimal = true
+		}
+
+		if flag.Name == "ZEROFILL" {
+			isZeroFill = true
+		}
+	}
+
+	if opts.Length != 0 {
+		res += fmt.Sprintf("({%d})", opts.Length)
+	}
+
+	if !isDecimal {
+		res += " unsigned"
+	}
+
+	if isZeroFill {
+		res += " zerofill"
+	}
+
+	return res
 }
