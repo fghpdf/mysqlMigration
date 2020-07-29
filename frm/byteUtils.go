@@ -20,7 +20,9 @@ func (b byteSlice) convertRangeToNumber(offset uint64, length uint64) uint64 {
 
 	// must be even
 	if dataLen%2 != 0 {
-		panic(errors.BYTE_LEN_MUST_BE_EVEN.New("byte length must be even"))
+		data = append(data, 0x00)
+		dataLen = len(data)
+		//panic(errors.BYTE_LEN_MUST_BE_EVEN.New("byte length must be even"))
 	}
 
 	var sb strings.Builder
