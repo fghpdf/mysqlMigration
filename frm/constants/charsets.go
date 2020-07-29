@@ -10,7 +10,7 @@ type Charset struct {
 	MaxLen    uint
 }
 
-var codeToCharsetMap = map[uint]Charset{
+var codeToCharsetMap = map[uint64]Charset{
 	32: {
 		Id:        32,
 		Name:      "armscii8",
@@ -1546,7 +1546,7 @@ var codeToCharsetMap = map[uint]Charset{
 	},
 }
 
-func Lookup(id uint) *Charset {
+func Lookup(id uint64) *Charset {
 	ch, ok := codeToCharsetMap[id]
 	if !ok {
 		panic(errors.NewFormat("Charset id '%d' not found", id))

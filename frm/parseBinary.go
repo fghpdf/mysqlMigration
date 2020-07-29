@@ -66,6 +66,8 @@ func parse(fileData byteSlice) {
 		Defaults:  fileData.readData(columnDefaultsOffset, columnDefaultsLength),
 	}
 
+	fmt.Println(columnData.Names)
+
 	packedFrmData := packedFrmData{
 		MySQLVersion: mySQLVersion,
 		KeyInfo:      keyInfo,
@@ -83,20 +85,20 @@ func parse(fileData byteSlice) {
 		engine = constants.GetLegacyDBTypeFromCode(uint(fileData[0x003d])).Name
 	}
 
-	charset := constants.Lookup(uint(fileData[0x0026]))
+	charset := constants.Lookup(uint64(fileData[0x0026]))
 
 	tableOpts := TableOptions{
-		Connection:    connection,
-		Engine:        engine,
-		Charset:       *charset,
-		MinRows:       fileData.convertRangeToNumber(0x0016, 4),
-		MaxRows:       fileData.convertRangeToNumber(0x0012, 4),
-		AvgRowLength:  fileData.convertRangeToNumber(0x0022, 4),
-		HandlerOption: *constants.GetHaOptionsFromCode(fileData.convertRangeToNumber(0x001e, 2)),
-		RowFormat:     *constants.GetHaRowTypeFromCode(uint(fileData[0x0028])),
-		KeyBlockSize:  fileData.convertRangeToNumber(0x003e, 2),
-		Comment:       "",
-		PartitionInfo: partitionInfo,
+		Connection:     connection,
+		Engine:         engine,
+		Charset:        *charset,
+		MinRows:        fileData.convertRangeToNumber(0x0016, 4),
+		MaxRows:        fileData.convertRangeToNumber(0x0012, 4),
+		AvgRowLength:   fileData.convertRangeToNumber(0x0022, 4),
+		HandlerOptions: *constants.GetHaOptionsFromCode(fileData.convertRangeToNumber(0x001e, 2)),
+		RowFormat:      *constants.GetHaRowTypeFromCode(uint(fileData[0x0028])),
+		KeyBlockSize:   fileData.convertRangeToNumber(0x003e, 2),
+		Comment:        "",
+		PartitionInfo:  partitionInfo,
 	}
 
 	table := Table{
@@ -105,7 +107,7 @@ func parse(fileData byteSlice) {
 		Charset:      *charset,
 	}
 
-	fmt.Println(table.TableOptions.HandlerOption)
+	parseColumnData(columnData, table)
 }
 
 // MySQL version encoded as a 4-byte integer in little endian format.
